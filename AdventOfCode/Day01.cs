@@ -23,7 +23,7 @@ namespace AdventOfCode
                 }
             }
 
-            public int FindTotalDistance()
+            public int CalculateTotalDistance()
             {
                 var sum = 0;
                 IdsLeft.Sort();
@@ -37,19 +37,47 @@ namespace AdventOfCode
 
                 return sum;
             }
+
+            public long CalcultateSimilarityScore()
+            {
+                var left = ListToFrequencyMap(IdsLeft);
+                var right = ListToFrequencyMap(IdsRight);
+                long sum = 0;
+
+                foreach (var (num, frequencyLeft) in left)
+                    if (right.TryGetValue(num, out int frequencyRight))
+                        sum += num * frequencyLeft * frequencyRight;
+
+                return sum;
+            }
+
+            private Dictionary<int, int> ListToFrequencyMap(List<int> list)
+            {
+                var map = new Dictionary<int, int>();
+                foreach (var number in list)
+                {
+                    if (map.ContainsKey(number))
+                        map[number]++;
+                    else
+                        map[number] = 1;
+                }
+
+                return map;
+            }
         }
 
         // == == == == == Puzzle 1 == == == == ==
         public static string Puzzle1(string input)
         {
             var ls = new LocationSolver(input);
-            return ls.FindTotalDistance().ToString();
+            return ls.CalculateTotalDistance().ToString();
         }
 
         // == == == == == Puzzle 2 == == == == ==
         public static string Puzzle2(string input)
         {
-            return "Puzzle2";
-        }
+                var ls = new LocationSolver(input);
+                return ls.CalcultateSimilarityScore().ToString();
+            }
     }
 }
