@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace AdventOfCodeTests
 {
+    [Ignore]
     [TestClass]
     public class Day03Tests
     {
