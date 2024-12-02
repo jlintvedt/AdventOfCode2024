@@ -12,11 +12,11 @@ namespace AdventOfCode
         {
             public List<Report> Reports = [];
 
-            public RednoseReports(string input)
+            public RednoseReports(string input, bool useProblemDampener = false)
             {
                 foreach (var line in input.Split(Environment.NewLine))
                 {
-                    Reports.Add(new Report(line));
+                    Reports.Add(new Report(line, useProblemDampener));
                 }
             }
 
@@ -25,7 +25,7 @@ namespace AdventOfCode
                 var numSafe = 0;
 
                 foreach (var report in Reports)
-                    if (report.IsGraduallyChanging())
+                    if (report.IsSafe)
                         numSafe++;
 
                 return numSafe;
@@ -34,21 +34,44 @@ namespace AdventOfCode
             public class Report
             {
                 public List<int> Levels = [];
+                public bool IsSafe;
 
-                public Report(string line)
+                public Report(string line, bool useProblemDampener = false)
                 {
                     foreach (var num in line.Split(" "))
                     {
                         Levels.Add(int.Parse(num));
                     }
+
+                    IsSafe = CheckIfSafe(useProblemDampener);
+                }
+
+                public bool CheckIfSafe(bool useProblemDampener = false)
+                {
+                    if (IsGraduallyChanging())
+                        return true;
+                    
+                    if (useProblemDampener)
+                    {
+                        for (int i = 0; i < Levels.Count; i++)
+                        {
+                            var tmp = Levels[i];
+                            Levels.RemoveAt(i);
+                            if (IsGraduallyChanging())
+                                return true;
+                            Levels.Insert(i, tmp);
+                        }
+                    }
+
+                    return false;
                 }
 
                 public bool IsGraduallyChanging()
                 {
                     var prev = Levels[0];
-                    var isIncreasing = prev - Levels[1] < 0 ? true : false;
+                    var isIncreasing = prev - Levels[1] < 0;
 
-                    for (int i = 1; i < Levels.Count; i++)
+                    for (int i = 1 ; i < Levels.Count; i++)
                     {
                         var diff = isIncreasing ? Levels[i] - prev : prev - Levels[i];
 
@@ -73,7 +96,8 @@ namespace AdventOfCode
         // == == == == == Puzzle 2 == == == == ==
         public static string Puzzle2(string input)
         {
-            return "Puzzle2";
+            var rr = new RednoseReports(input, useProblemDampener: true);
+            return rr.FindNumSafeReport().ToString();
         }
     }
 }
