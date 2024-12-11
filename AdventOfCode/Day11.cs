@@ -10,12 +10,12 @@ namespace AdventOfCode
     {
         public class PlutonianPebbles
         {
-            readonly List<Stone> stones = [];
+            Dictionary<long, long> stones = [];
 
             public PlutonianPebbles(string input)
             {
                 foreach (var num in input.Split(' '))
-                    stones.Add(new Stone(long.Parse(num)));
+                    AddStones(stones, long.Parse(num), 1);
             }
 
             public long CountNumberOfStonesAfterBlinks(int blinks)
@@ -23,56 +23,51 @@ namespace AdventOfCode
                 for (int i = 0; i < blinks; i++)
                     Blink();
 
-                return stones.Count;
+                long count = 0;
+                foreach (var stone in stones)
+                    count += stone.Value;
+
+                return count;
             }
 
             private void Blink()
             {
-                var numNewStones = 0;
-                var newStones = new List<(int pos, Stone stone)>();
+                var tmpStones = new Dictionary<long, long>();
 
-                for (int i = 0; i < stones.Count; i++)
+                foreach (var (value, count) in stones)
                 {
-                    var newStone = stones[i].Change();
-                    if (newStone != null)
-                        newStones.Add((i + ++numNewStones, newStone));
+                    var changed = ChangeStone(value);
+                    AddStones(tmpStones, changed.Item1, count);
+                    if (changed.Item2 >= 0)
+                        AddStones(tmpStones, changed.Item2, count);
                 }
 
-                foreach (var (pos, stone) in newStones)
-                    stones.Insert(pos, stone);
+                stones = tmpStones;
             }
 
-            public class Stone(long number)
+            private static void AddStones(Dictionary<long, long> stones, long value, long count)
             {
-                public long Number = number;
+                if (!stones.TryAdd(value, count))
+                    stones[value] += count;
+            }
 
-                public Stone Change()
+            public static (long, long) ChangeStone(long value)
+            {
+                if (value == 0)
+                    return (1, -1);
+
+                // Check if even number of digits and split stone
+                var digits = (int)Math.Floor(Math.Log10(value)) + 1;
+                if (digits % 2 == 0)
                 {
-                    if (Number == 0)
-                    {
-                        Number = 1;
-                        return null;
-                    }
-
-                    // Check if even number of digits and split stone
-                    var digits = Math.Floor(Math.Log10(Number)) + 1;
-                    if (digits % 2 == 0)
-                    {
-                        var mask = (long)Math.Pow(10, digits/2);
-                        var remainder = Number % mask;
-                        Number = (Number - remainder) / mask;
-                        return new Stone(remainder);
-                    }
-
-                    // Multiply number
-                    Number *= 2024;
-                    return null;
+                    var mask = (long)Math.Pow(10, digits / 2);
+                    var remainder = value % mask;
+                    value = (value - remainder) / mask;
+                    return (value, remainder);
                 }
 
-                public override string ToString()
-                {
-                    return Number.ToString();
-                }
+                // Multiply number
+                return (value * 2024, -1);
             }
         }
 
@@ -86,7 +81,8 @@ namespace AdventOfCode
         // == == == == == Puzzle 2 == == == == ==
         public static string Puzzle2(string input)
         {
-            return "Puzzle2";
+            var pp = new PlutonianPebbles(input);
+            return pp.CountNumberOfStonesAfterBlinks(75).ToString();
         }
     }
 }

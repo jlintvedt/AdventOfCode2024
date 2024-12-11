@@ -37,23 +37,13 @@ namespace AdventOfCodeTests
         }
 
         [TestMethod]
-        public void Example_Puzzle2()
-        {
-            // Act
-            var result = AdventOfCode.Day11.Puzzle2(InputProvider.GetExample(AdventOfCode.Const.Year, day, exampleNum: 1));
-
-            // Assert
-            Assert.AreEqual($"Puzzle2", result);
-        }
-
-        [TestMethod]
         public void Puzzle2()
         {
             // Act
             var result = AdventOfCode.Day11.Puzzle2(input_puzzle);
 
             // Assert
-            Assert.AreEqual($"Puzzle2", result);
+            Assert.AreEqual($"250783680217283", result);
         }
     }
 }
