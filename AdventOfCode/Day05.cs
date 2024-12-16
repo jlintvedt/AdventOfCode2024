@@ -35,6 +35,17 @@ namespace AdventOfCode
                 return sum;
             }
 
+            public int FindSumOfMiddlePageForFixedInvalidManuals()
+            {
+                var sum = 0;
+
+                foreach (var manual in safetyManuals)
+                    if (!manual.IsValidPageOrder(rules))
+                        sum += manual.ReorderAndGetMiddlePage(rules);
+
+                return sum;
+            }
+
             private void AddPageRule(string ordering)
             {
                 var parts = ordering.Split('|');
@@ -57,7 +68,6 @@ namespace AdventOfCode
                 }
 
                 return rule;
-
             }
 
             public class PageRules(int pageNumber)
@@ -93,16 +103,48 @@ namespace AdventOfCode
 
                 public bool IsValidPageOrder(Dictionary<int, PageRules> rules)
                 {
-                    for (int i = 1; i < PageNumbers.Count; i++)
-                        if (!rules[PageNumbers[i]].IsValid(PageNumbers[0..(i)]))
-                            return false;
-
-                    return true;
+                    return IndexOfMisplacedPage(rules) == -1;
                 }
 
                 public int GetMiddlePage()
                 {
                     return PageNumbers[PageNumbers.Count / 2];
+                }
+
+                public int ReorderAndGetMiddlePage(Dictionary<int, PageRules> rules)
+                {
+                    while (FixMisplacedPage(rules)) {}
+                    return GetMiddlePage();
+                }
+
+                private bool FixMisplacedPage(Dictionary<int, PageRules> rules)
+                {
+                    var index = IndexOfMisplacedPage(rules);
+                    if (index == -1)
+                        return false; // No fix was needed
+
+                    var number = PageNumbers[index];
+                    var newIndex = index;
+                    foreach (var after in rules[number].AllowedPagesAfter)
+                    {
+                        var otherIndex = PageNumbers.IndexOf(after);
+                        if (otherIndex != -1 && otherIndex < newIndex)
+                            newIndex = otherIndex;
+                    }
+
+                    PageNumbers.RemoveAt(index);
+                    PageNumbers.Insert(newIndex, number);
+
+                    return true; // A page was moved
+                }
+
+                private int IndexOfMisplacedPage(Dictionary<int, PageRules> rules)
+                {
+                    for (int i = 1; i < PageNumbers.Count; i++)
+                        if (!rules[PageNumbers[i]].IsValid(PageNumbers[0..(i)]))
+                            return i;
+
+                    return -1;
                 }
             }
         }
@@ -117,7 +159,8 @@ namespace AdventOfCode
         // == == == == == Puzzle 2 == == == == ==
         public static string Puzzle2(string input)
         {
-            return "Puzzle2";
+            var pq = new PrintingQueue(input);
+            return pq.FindSumOfMiddlePageForFixedInvalidManuals().ToString();
         }
     }
 }
